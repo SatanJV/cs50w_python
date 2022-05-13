@@ -7,9 +7,9 @@
 {% block body %}
     <h1>Editing {{entry}}</h1>
 
-    <form action="{% url 'add_new' %}" method="POST">
+    <form action="{% url 'edit' entry %}" method="POST">
         {% csrf_token %}
-        {{ entry_form }}
+        {{edit_form}}
         <input type="submit">
     </form>
 {% endblock %}

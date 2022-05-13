@@ -1,9 +1,14 @@
-from turtle import title
-from xml.dom import ValidationErr
+from django.urls import reverse
 from django.shortcuts import render
 from django import forms
 from django.http import HttpResponseRedirect
 from . import util
+from random import randrange
+import sys
+sys.path.append('C:\python310\Lib\site-packages\markdown2')
+from markdown2 import Markdown
+
+markdowner = Markdown()
 
 class newSearchForm(forms.Form):
     query = forms.CharField(label ="")
@@ -19,7 +24,7 @@ class newEntryForm(forms.Form):
         return title
 
 class newEditForm(forms.Form):
-    content = forms.CharField(widget=forms.Textarea)
+    edit_content = forms.CharField(widget=forms.Textarea, label="")
 
 def index(request):
     return render(request, "encyclopedia/index.html", {
@@ -28,9 +33,10 @@ def index(request):
     })
 
 def entry(request, entry):
+    page = util.get_entry(entry)
     return render(request, "encyclopedia/entry.html", {
         "entry": entry,
-        "content": util.get_entry(entry),
+        "content": markdowner.convert(page),
         "form": newSearchForm()
     })
 
@@ -79,24 +85,35 @@ def add_new(request):
     })
 
 def edit(request, entry):
-    if request.method == "POST":
+    if request.method == "GET":
         content=util.get_entry(entry)
+        editable_form = newEditForm(initial={'edit_content': content})
+        return render(request, "encyclopedia/edit.html", {
+            "entry": entry,
+            "form": newSearchForm(),
+            "edit_form": editable_form
+        })
+    if request.method == "POST":
         form = newEditForm(request.POST)
         if form.is_valid():
-            content = form.cleaned_data["content"]
+            content = form.cleaned_data["edit_content"]
             util.save_entry(entry, content)
-            return HttpResponseRedirect("entry/" + entry)
+            return HttpResponseRedirect(reverse("entry", kwargs={'entry':entry}))
         else:
             return render(request, "encyclopedia/edit.html", {
                 "entry": entry,
-                "content": content,
                 "edit_form": form,
                 "form": newSearchForm()
             })
     content = util.get_entry(entry)
     return render(request, "encyclopedia/edit.html", {
         "entry": entry,
-        "content": content,
         "form": newSearchForm(),
-        "edit_form": newEditForm()
+        "edit_form": newEditForm(initial={'edit_content': content})
     })
+
+def random(request):
+    entry_list = util.list_entries()
+    index = randrange(len(entry_list))
+    entry = entry_list[index]
+    return HttpResponseRedirect(reverse("entry", kwargs={'entry':entry}))

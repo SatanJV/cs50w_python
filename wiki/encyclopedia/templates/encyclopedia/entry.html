@@ -6,12 +6,11 @@
 
 {% block body %}
     {% if content %}
-        <h1>{{ entry }}</h1>
-
         <div>
-            {{ content }}
+            {{ content|safe }}
         </div>
-        <form action="{% url 'edit' entry %}" method="POST">
+        <form action="{% url 'edit' entry %}" method="GET">
+            {% csrf_token %}
             <input type="submit" value="Edit">
         </form>
     {% else %}
