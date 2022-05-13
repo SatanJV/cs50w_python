@@ -4,8 +4,6 @@ from django import forms
 from django.http import HttpResponseRedirect
 from . import util
 from random import randrange
-import sys
-sys.path.append('C:\python310\Lib\site-packages\markdown2')
 from markdown2 import Markdown
 
 markdowner = Markdown()
